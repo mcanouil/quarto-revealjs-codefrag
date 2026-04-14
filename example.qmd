@@ -1,0 +1,348 @@
+---
+title: "Reveal.js Code Annotation Fragments"
+subtitle: "Quarto Extension"
+author:
+  - name: "Mickaël CANOUIL, _Ph.D._"
+    orcid: "0000-0002-3396-4549"
+    url: "https://mickael.canouil.fr"
+format:
+  revealjs:
+    output-file: index
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+---
+
+# Introduction
+
+## What is Codefrag?
+
+This extension enables fragment-based navigation through code annotations in Reveal.js presentations.
+
+- Navigate annotations using arrow keys.
+- Annotations are treated as fragments.
+- Synchronises with line highlighting when present.
+
+## Installation
+
+Install the extension using:
+
+```bash
+quarto add mcanouil/quarto-revealjs-codefrag
+```
+
+## Basic Setup
+
+Add to your document YAML:
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+```
+
+# Sequential Annotations
+
+## Code Annotations
+
+Use arrow keys to step through each annotation.
+
+```{.r}
+library(dplyr)            # <1>
+
+mtcars |>                 # <2>
+  filter(mpg > 20) |>     # <3>
+  select(mpg, cyl, hp) |> # <4>
+  arrange(desc(mpg))      # <5>
+```
+
+1. Load the dplyr package for data manipulation.
+2. Start with the mtcars dataset.
+3. Filter rows where mpg is greater than 20.
+4. Select only the columns we need.
+5. Sort by mpg in descending order.
+
+## Python Example
+
+Annotations work with any language.
+
+```{.python}
+import polars as pl                    # <1>
+
+df = pl.read_csv("data.csv")           # <2>
+df = df.filter(                        # <3>
+    pl.col("value") > 0
+)
+result = df.group_by("category").agg(  # <4>
+    pl.col("value").mean()
+)
+```
+
+1. Import Polars for data manipulation.
+2. Read a CSV file into a DataFrame.
+3. Filter rows where value is positive.
+4. Group by category and compute the mean.
+
+# Line Highlighting Sync
+
+## Synced Annotations (Matching Lines)
+
+Every highlight clone matches an annotation on the same lines, so they share a navigation step.
+
+```{.r code-line-numbers="|1|3-5|6"}
+library(ggplot2)         # <1>
+
+ggplot(mtcars) +         # <2>
+  aes(x = mpg, y = wt) + # <2>
+  geom_point() +         # <2>
+  theme_minimal()        # <3>
+```
+
+1. Load the ggplot2 package.
+2. Build a scatter plot of mpg vs wt.
+3. Apply a minimal theme.
+
+## Partial Match (Unmatched Annotation)
+
+Without a leading `|`, the first highlight step is the initial state.
+Unmatched annotations appear at the end; matched pairs still sync.
+
+```{.r code-line-numbers="1|3-5|6"}
+library(ggplot2)         # <1>
+
+ggplot(mtcars) +         # <2>
+  aes(x = mpg, y = wt) + # <2>
+  geom_point() +         # <2>
+  theme_minimal()        # <3>
+```
+
+1. Load the ggplot2 package.
+2. Build a scatter plot of mpg vs wt.
+3. Apply a minimal theme.
+
+# Mixed Fragments
+
+## Annotations with Other Fragments
+
+Text fragments appear first, then code annotations follow.
+
+::: {.fragment}
+This paragraph fades in as the **first** fragment.
+:::
+
+::: {.fragment}
+This paragraph fades in as the **second** fragment.
+:::
+
+::: {.fragment}
+
+```{.r}
+model <- lm(mpg ~ wt, data = mtcars)    # <1>
+summary(model)                          # <2>
+plot(model, which = 1)                  # <3>
+```
+
+1. Fit a linear model predicting mpg from weight.
+2. Print the model summary.
+3. Plot residuals versus fitted values.
+
+:::
+
+::: {.fragment}
+This paragraph fades in **after** all annotations.
+:::
+
+## Custom Fragment Indices
+
+Use `code-annotation-fragment-indices` to interleave annotations with other fragments.
+
+::: {.fragment fragment-index=1}
+We need a data manipulation library before writing any pipeline code.
+:::
+
+::: {.fragment fragment-index=3}
+With the data piped in, we can start applying transformations.
+:::
+
+::: {.fragment fragment-index=5}
+The result keeps only cars that achieve more than 20 miles per gallon.
+:::
+
+::: {.fragment fragment-index=2}
+
+```{.r code-annotation-fragment-indices="2,3,4"}
+library(dplyr)            # <1>
+mtcars |>                 # <2>
+  filter(mpg > 20)        # <3>
+```
+
+1. Load dplyr for data wrangling.
+2. Pipe the mtcars dataset into the next step.
+3. Keep only rows where mpg exceeds 20.
+
+:::
+
+## Incremental List then Annotations
+
+::: {.incremental}
+- Import a data processing library.
+- Scan the file lazily for efficiency.
+- Collect the results into memory.
+:::
+
+::: {.fragment}
+
+```{.python}
+import polars as pl           # <1>
+df = pl.scan_csv("train.csv") # <2>
+df.collect()                  # <3>
+```
+
+1. Import the Polars library.
+2. Create a lazy frame from CSV.
+3. Materialise the lazy frame into memory.
+
+:::
+
+# Line Highlighting
+
+## Line Highlights Only (No Annotations)
+
+Line highlighting without annotations steps through highlights as normal fragments.
+
+```{.r code-line-numbers="|1|3-4|6"}
+library(dplyr)
+
+mtcars |>
+  filter(mpg > 20) |>
+
+  summarise(mean_mpg = mean(mpg))
+```
+
+## Line Highlights with Annotations
+
+All highlight clones match annotations on the same lines, so they sync.
+
+```{.r code-line-numbers="|1|3-4|6"}
+library(dplyr)                    # <1>
+
+mtcars |>                         # <2>
+  filter(mpg > 20) |>             # <2>
+
+  summarise(mean_mpg = mean(mpg)) # <3>
+```
+
+1. Load the dplyr package.
+2. Build the filtering pipeline.
+3. Compute the summary statistic.
+
+## Line Highlights with Custom Indices
+
+Use `code-line-fragment-indices` to control which fragment index each highlight step receives.
+
+::: {.fragment fragment-index=1}
+A two-panel layout is set up to compare plots side by side.
+:::
+
+::: {.fragment fragment-index=3}
+The first panel draws a basic scatter plot of speed vs distance.
+:::
+
+::: {.fragment fragment-index=5}
+The second panel repeats the plot in red for comparison.
+:::
+
+```{.r code-line-numbers="|2|3" code-line-fragment-indices="1,2,4"}
+par(mfrow = c(1, 2))
+plot(cars)
+plot(cars, col = "red")
+par(mfrow = c(1, 1))
+```
+
+## Line Highlights with Custom Indices and Annotations
+
+Combines `code-line-fragment-indices` with annotations.
+
+::: {.fragment fragment-index=1}
+Define the input as a numeric sequence.
+:::
+
+::: {.fragment fragment-index=3}
+Square each value to build a parabola.
+:::
+
+```{.r code-line-numbers="|1|3|5" code-line-fragment-indices="1,2,4,6"}
+x <- 1:10         # <1>
+
+y <- x^2
+
+plot(x, y)        # <2>
+```
+
+1. Create a sequence from 1 to 10.
+2. Plot the result.
+
+## Line Highlights with Fragments Before
+
+::: {.fragment}
+This script generates a simple parabola.
+Step through each highlighted line below.
+:::
+
+```{.r code-line-numbers="|1|3|5"}
+x <- 1:10         # <1>
+
+y <- x^2
+
+plot(x, y)        # <2>
+```
+
+1. Create a sequence from 1 to 10.
+2. Plot the result.
+
+# Plain Fragments
+
+## Fragments Without Annotations
+
+Slides with plain fragments (no code annotations or line highlights) should print as a single page.
+
+::: {.fragment}
+First point appears.
+:::
+
+::: {.fragment}
+Second point appears.
+:::
+
+::: {.fragment}
+Third point appears.
+:::
+
+# Configuration
+
+## Disabling the Plugin
+
+Disable fragment navigation while keeping tooltips:
+
+```yaml
+extensions:
+  codefrag:
+    enabled: false
+```
+
+## Features {.smaller}
+
+1. **Sequential Fragments**: Annotations become navigable fragments.
+2. **Line Highlight Sync**: Matching annotations and highlights share a step.
+3. **Partial Match**: Matched pairs sync; unmatched items get their own steps.
+4. **Custom Indices**: Control fragment order with custom index attributes.
+5. **Tooltip Patching**: Tooltips reposition to avoid clipping.
+6. **Bidirectional Navigation**: Navigate forwards and backwards.
+
+# Thank You
+
+## Questions?
+
+Feel free to ask any questions about the Reveal.js Code Annotation Fragments extension.
