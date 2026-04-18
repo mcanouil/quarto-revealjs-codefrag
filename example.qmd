@@ -125,7 +125,7 @@ ggplot(mtcars) +         # <2>
 ## Subset Match (Annotation Inside Highlight Range)
 
 An annotation whose lines are a subset of a highlight's lines syncs with that step.
-Here, `<2>` on line 3 alone syncs with the highlight spanning lines 2-3.
+Here, `<2>` marks only line 3 yet syncs with the highlight spanning lines 2-3.
 
 ```{.r code-line-numbers="|1|2-3|4"}
 library(dplyr)                    # <1>
