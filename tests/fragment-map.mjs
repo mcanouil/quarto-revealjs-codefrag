@@ -52,6 +52,14 @@ const EXPECTED = {
     { index: "1", label: "annot-3" },
     { index: "1", label: "highlight-lines=6" },
   ],
+  "3/3": [
+    { index: "0", label: "annot-1" },
+    { index: "0", label: "highlight-lines=1" },
+    { index: "1", label: "annot-2" },
+    { index: "1", label: "highlight-lines=2-3" },
+    { index: "2", label: "annot-3" },
+    { index: "2", label: "highlight-lines=4" },
+  ],
   "4/1": [
     { index: "3", label: "annot-1" },
     { index: "4", label: "annot-2" },
