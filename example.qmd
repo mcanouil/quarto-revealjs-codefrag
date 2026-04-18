@@ -28,7 +28,7 @@ This extension enables fragment-based navigation through code annotations in Rev
 Install the extension using:
 
 ```bash
-quarto add mcanouil/quarto-revealjs-codefrag
+quarto add mcanouil/quarto-revealjs-codefrag@1.0.0
 ```
 
 ## Basic Setup
