@@ -15,7 +15,7 @@ This extension creates invisible fragment triggers for each annotation, allowing
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-revealjs-codefrag@1.0.0
+quarto add mcanouil/quarto-revealjs-codefrag
 ```
 
 This will install the extension under the `_extensions` subdirectory.
