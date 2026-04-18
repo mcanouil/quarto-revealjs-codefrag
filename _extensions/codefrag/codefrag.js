@@ -128,6 +128,20 @@ window.RevealJsCodefrag = function () {
   }
 
   /**
+   * @param {Set<number>} a
+   * @param {Set<number>} b
+   * @returns {boolean} True if `a` is non-empty and every element of `a` is in `b`.
+   */
+  function isSubsetOf(a, b) {
+    if (a.size === 0) return false;
+    if (a.size > b.size) return false;
+    for (const item of a) {
+      if (!b.has(item)) return false;
+    }
+    return true;
+  }
+
+  /**
    * Get the line-number set for an annotation from its Quarto description span.
    * @param {string} cellId
    * @param {string} annotationNumber
@@ -398,7 +412,10 @@ window.RevealJsCodefrag = function () {
         getAnnotationLineSet(cellId, anchor.dataset.targetAnnotation)
       );
 
-      // Match each highlight fragment with an annotation by line set equality.
+      // Match each highlight fragment with an annotation. Pass 1 requires
+      // exact line-set equality; pass 2 accepts an annotation whose lines
+      // are a subset of the highlight's lines (e.g., a single-line
+      // annotation inside a multi-line highlight range).
       const highlightMatch = new Array(highlightFragments.length).fill(-1);
       const annotationMatch = new Array(anchorList.length).fill(-1);
 
@@ -407,6 +424,19 @@ window.RevealJsCodefrag = function () {
         for (let a = 0; a < annotationLineSets.length; a++) {
           if (annotationMatch[a] !== -1) continue;
           if (setsEqual(fragmentLineSets[h], annotationLineSets[a])) {
+            highlightMatch[h] = a;
+            annotationMatch[a] = h;
+            break;
+          }
+        }
+      }
+
+      for (let h = 0; h < fragmentLineSets.length; h++) {
+        if (highlightMatch[h] !== -1) continue;
+        if (fragmentLineSets[h].size === 0) continue;
+        for (let a = 0; a < annotationLineSets.length; a++) {
+          if (annotationMatch[a] !== -1) continue;
+          if (isSubsetOf(annotationLineSets[a], fragmentLineSets[h])) {
             highlightMatch[h] = a;
             annotationMatch[a] = h;
             break;
@@ -424,15 +454,28 @@ window.RevealJsCodefrag = function () {
       const step0Matched = new Set();
 
       if (step0Lines.size > 0) {
+        let step0Annotation = -1;
         for (let a = 0; a < anchorList.length; a++) {
           if (annotationMatch[a] !== -1) continue;
           if (setsEqual(step0Lines, annotationLineSets[a])) {
-            step0Matched.add(a);
-            codeBlock.dataset.step0Cell = cellId;
-            codeBlock.dataset.step0Annotation =
-              anchorList[a].dataset.targetAnnotation;
+            step0Annotation = a;
             break;
           }
+        }
+        if (step0Annotation === -1) {
+          for (let a = 0; a < anchorList.length; a++) {
+            if (annotationMatch[a] !== -1) continue;
+            if (isSubsetOf(annotationLineSets[a], step0Lines)) {
+              step0Annotation = a;
+              break;
+            }
+          }
+        }
+        if (step0Annotation !== -1) {
+          step0Matched.add(step0Annotation);
+          codeBlock.dataset.step0Cell = cellId;
+          codeBlock.dataset.step0Annotation =
+            anchorList[step0Annotation].dataset.targetAnnotation;
         }
       }
 
