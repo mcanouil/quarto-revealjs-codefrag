@@ -9,5 +9,5 @@ authors:
 repository-code: "https://github.com/mcanouil/quarto-revealjs-codefrag"
 url: "https://m.canouil.dev/quarto-revealjs-codefrag/"
 license: "MIT"
-date-released: "2026-04-18"
-version: 1.0.0
+date-released: "2026-04-27"
+version: 1.0.1

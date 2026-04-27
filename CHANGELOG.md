@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.0.1 (2026-04-27)
+
 ### Bug Fixes
 
 - fix: Patch tooltip `appendTo` on every show to escape `overflow: hidden` containers (e.g. `code-window`).
