@@ -226,7 +226,14 @@ window.RevealJsCodefrag = function () {
     const anchor = document.querySelector(selector);
     if (!anchor) return;
 
+    const slide = anchor.closest("section");
+
     if (anchor._tippy) {
+      // Re-patch appendTo before showing. Idempotent if already patched by
+      // patchAnnotationTooltips(); corrects instances created or re-created
+      // after the initial ready-event call. hideAnnotationTooltips() unmounts
+      // the tooltip beforehand, so show() will remount into the slide.
+      if (slide) anchor._tippy.setProps({ appendTo: slide });
       anchor._tippy.show();
       // Tippy creates popperInstance lazily on first mount; defer the
       // position update so it runs after the instance is available.
@@ -234,7 +241,22 @@ window.RevealJsCodefrag = function () {
         anchor._tippy?.popperInstance?.update();
       });
     } else {
+      // anchor.click() triggers Quarto's handler which creates and mounts the
+      // Tippy instance synchronously inside overflow:hidden containers. Patch
+      // the config and physically move the already-mounted popper DOM node to
+      // the slide section (avoids triggering onHide/onShow lifecycle hooks).
+      // Position is corrected in rAF after the DOM move settles.
       anchor.click();
+      if (anchor._tippy && slide) {
+        anchor._tippy.setProps({ appendTo: slide });
+        const popper = anchor._tippy.popper;
+        if (popper && !slide.contains(popper)) {
+          slide.appendChild(popper);
+        }
+        requestAnimationFrame(() => {
+          anchor._tippy?.popperInstance?.update();
+        });
+      }
     }
   }
 
