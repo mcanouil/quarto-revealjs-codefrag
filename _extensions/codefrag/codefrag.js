@@ -102,16 +102,17 @@ window.RevealJsCodefrag = function () {
   let patchTooltipOverflow = true;
 
   /**
-   * Locate the nearest ancestor that does not clip overflow.
+   * Locate a non-clipping append target for an annotation tooltip.
    *
-   * Annotation tooltips are mounted into this element so they escape any
-   * `overflow: hidden` wrapper (e.g. nested `.cell`/`.column`/`code-window`
-   * containers). The search is capped at the enclosing slide, which is the
-   * safest fallback because the slide section is the layout root for
-   * Reveal.js fragment timing.
+   * Returns the enclosing slide `<section>` only when at least one ancestor
+   * between the anchor and the slide actually clips overflow (e.g. nested
+   * `.cell`/`.column`/`code-window` wrappers). Returns `null` when no
+   * ancestor clips, so callers leave Quarto's default `appendTo` in place
+   * and natural layouts such as `::: {.columns}` render correctly.
    *
    * @param {Element} anchor
-   * @returns {Element|null} Best appendTo target for the tooltip.
+   * @returns {Element|null} Slide section when a clipping ancestor is found,
+   *   otherwise `null`.
    */
   function findTooltipAppendTo(anchor) {
     const slide = anchor.closest("section");
@@ -128,7 +129,7 @@ window.RevealJsCodefrag = function () {
       }
       node = node.parentElement;
     }
-    return slide;
+    return null;
   }
 
   /**
