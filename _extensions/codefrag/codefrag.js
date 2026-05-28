@@ -18,7 +18,9 @@
  * ```yaml
  * extensions:
  *   codefrag:
- *     enabled: true  # default
+ *     enabled: true            # default
+ *     patch-tooltip-overflow: true  # default; set false to keep Quarto's appendTo
+ *     on-annotation-shown: function (info) { ... }
  * ```
  *
  * Custom annotation fragment indices:
@@ -63,23 +65,139 @@ window.RevealJsCodefrag = function () {
 
   /**
    * @param {Object} config
+   * @returns {Object} Plugin options namespace, or an empty object.
+   */
+  function getCodefragOptions(config) {
+    return config["extensions"]?.["codefrag"] ?? {};
+  }
+
+  /**
+   * @param {Object} config
    * @returns {boolean} True if enabled (default).
    */
   function getEnabled(config) {
-    const value = config["extensions"]?.["codefrag"]?.["enabled"];
+    const value = getCodefragOptions(config)["enabled"];
     return typeof value === "boolean" ? value : true;
   }
 
   /**
+   * @param {Object} config
+   * @returns {boolean} True when the appendTo patch should run (default).
+   */
+  function getPatchTooltipOverflow(config) {
+    const value = getCodefragOptions(config)["patch-tooltip-overflow"];
+    return typeof value === "boolean" ? value : true;
+  }
+
+  /**
+   * @param {Object} config
+   * @returns {Function|null} User callback invoked after an annotation shows.
+   */
+  function getOnAnnotationShown(config) {
+    const value = getCodefragOptions(config)["on-annotation-shown"];
+    return typeof value === "function" ? value : null;
+  }
+
+  let onAnnotationShownCallback = null;
+  let patchTooltipOverflow = true;
+
+  /**
+   * Locate the nearest ancestor that does not clip overflow.
+   *
+   * Annotation tooltips are mounted into this element so they escape any
+   * `overflow: hidden` wrapper (e.g. nested `.cell`/`.column`/`code-window`
+   * containers). The search is capped at the enclosing slide, which is the
+   * safest fallback because the slide section is the layout root for
+   * Reveal.js fragment timing.
+   *
+   * @param {Element} anchor
+   * @returns {Element|null} Best appendTo target for the tooltip.
+   */
+  function findTooltipAppendTo(anchor) {
+    const slide = anchor.closest("section");
+    if (!slide) return null;
+    let node = anchor.parentElement;
+    while (node && node !== slide) {
+      const style = window.getComputedStyle(node);
+      if (
+        style.overflowX === "hidden" ||
+        style.overflowY === "hidden" ||
+        style.overflow === "hidden"
+      ) {
+        return slide;
+      }
+      node = node.parentElement;
+    }
+    return slide;
+  }
+
+  /**
+   * Run the user-supplied onAnnotationShown callback, swallowing any
+   * exception with a console.error so a faulty hook cannot break navigation.
+   *
+   * @param {Element} anchor
+   * @param {Element|null} slide
+   */
+  function fireAnnotationShown(anchor, slide) {
+    if (!onAnnotationShownCallback) return;
+    try {
+      onAnnotationShownCallback({
+        anchor,
+        slide,
+        targetCell: anchor.dataset.targetCell,
+        targetAnnotation: anchor.dataset.targetAnnotation,
+        tippy: anchor._tippy ?? null,
+      });
+    } catch (err) {
+      console.error("[codefrag] on-annotation-shown callback threw:", err);
+    }
+  }
+
+  /**
+   * Parse a comma-separated index list, recording the position and raw
+   * value of any token that does not parse as a finite integer.
+   *
    * @param {string} str - Comma-separated indices (e.g., "1,3,5").
-   * @returns {Array<number|null>} Parsed indices.
+   * @returns {{ indices: Array<number|null>, invalid: Array<{ position: number, value: string }> }}
    */
   function parseFragmentIndices(str) {
-    if (!str || typeof str !== "string") return [];
-    return str.split(",").map((s) => {
-      const num = parseInt(s.trim(), 10);
-      return isNaN(num) ? null : num;
-    });
+    if (!str || typeof str !== "string") {
+      return { indices: [], invalid: [] };
+    }
+    const parts = str.split(",");
+    const indices = new Array(parts.length);
+    const invalid = [];
+    for (let i = 0; i < parts.length; i++) {
+      const raw = parts[i].trim();
+      const num = parseInt(raw, 10);
+      if (!Number.isFinite(num) || String(num) !== raw) {
+        indices[i] = null;
+        invalid.push({ position: i, value: parts[i] });
+      } else {
+        indices[i] = num;
+      }
+    }
+    return { indices, invalid };
+  }
+
+  /**
+   * Emit a warning when a fragment-index list contains invalid tokens.
+   * Centralises the "early validation" phase so each consumer of
+   * parseFragmentIndices() reports identically with cell context.
+   *
+   * @param {string} attribute - Source attribute name for the warning.
+   * @param {Array<{ position: number, value: string }>} invalid - Bad tokens.
+   * @param {Element} context - Element to log alongside the warning.
+   */
+  function warnInvalidFragmentIndices(attribute, invalid, context) {
+    if (invalid.length === 0) return;
+    const tokens = invalid
+      .map((entry) => `position ${entry.position + 1} ("${entry.value}")`)
+      .join(", ");
+    console.warn(
+      `[codefrag] Ignoring non-numeric ${attribute} ${invalid.length > 1 ? "tokens" : "token"}: ${tokens}.`,
+      context
+    );
   }
 
   /**
@@ -205,14 +323,16 @@ window.RevealJsCodefrag = function () {
   }
 
   /**
-   * Patch all annotation tooltips to append to their slide.
-   * Prevents overflow clipping from inner containers.
+   * Patch all annotation tooltips to append to a non-clipping ancestor.
+   * Prevents overflow clipping from inner containers. No-op when the
+   * `patch-tooltip-overflow` option is disabled.
    */
   function patchAnnotationTooltips() {
+    if (!patchTooltipOverflow) return;
     for (const anchor of document.querySelectorAll(SEL_ANCHOR)) {
       if (!anchor._tippy) continue;
-      const slide = anchor.closest("section");
-      if (slide) anchor._tippy.setProps({ appendTo: slide });
+      const target = findTooltipAppendTo(anchor);
+      if (target) anchor._tippy.setProps({ appendTo: target });
     }
   }
 
@@ -227,37 +347,45 @@ window.RevealJsCodefrag = function () {
     if (!anchor) return;
 
     const slide = anchor.closest("section");
+    const appendTarget = patchTooltipOverflow ? findTooltipAppendTo(anchor) : null;
 
     if (anchor._tippy) {
       // Re-patch appendTo before showing. Idempotent if already patched by
       // patchAnnotationTooltips(); corrects instances created or re-created
       // after the initial ready-event call. hideAnnotationTooltips() unmounts
       // the tooltip beforehand, so show() will remount into the slide.
-      if (slide) anchor._tippy.setProps({ appendTo: slide });
+      if (appendTarget) anchor._tippy.setProps({ appendTo: appendTarget });
       anchor._tippy.show();
       // Tippy creates popperInstance lazily on first mount; defer the
-      // position update so it runs after the instance is available.
+      // position update so it runs after the instance is available. Guard
+      // against the anchor being detached (e.g. slide swap) between scheduling
+      // and execution so the rAF callback never throws.
       requestAnimationFrame(() => {
+        if (!anchor.isConnected) return;
         anchor._tippy?.popperInstance?.update();
       });
-    } else {
-      // anchor.click() triggers Quarto's handler which creates and mounts the
-      // Tippy instance synchronously inside overflow:hidden containers. Patch
-      // the config and physically move the already-mounted popper DOM node to
-      // the slide section (avoids triggering onHide/onShow lifecycle hooks).
-      // Position is corrected in rAF after the DOM move settles.
-      anchor.click();
-      if (anchor._tippy && slide) {
-        anchor._tippy.setProps({ appendTo: slide });
-        const popper = anchor._tippy.popper;
-        if (popper && !slide.contains(popper)) {
-          slide.appendChild(popper);
-        }
-        requestAnimationFrame(() => {
-          anchor._tippy?.popperInstance?.update();
-        });
-      }
+      fireAnnotationShown(anchor, slide);
+      return;
     }
+
+    // anchor.click() triggers Quarto's handler which creates and mounts the
+    // Tippy instance synchronously inside overflow:hidden containers. Patch
+    // the config and physically move the already-mounted popper DOM node to
+    // the slide section (avoids triggering onHide/onShow lifecycle hooks).
+    // Position is corrected in rAF after the DOM move settles.
+    anchor.click();
+    if (anchor._tippy && appendTarget) {
+      anchor._tippy.setProps({ appendTo: appendTarget });
+      const popper = anchor._tippy.popper;
+      if (popper && !appendTarget.contains(popper)) {
+        appendTarget.appendChild(popper);
+      }
+      requestAnimationFrame(() => {
+        if (!anchor.isConnected) return;
+        anchor._tippy?.popperInstance?.update();
+      });
+    }
+    fireAnnotationShown(anchor, slide);
   }
 
   // --- Fragment creation ----------------------------------------------------
@@ -313,13 +441,18 @@ window.RevealJsCodefrag = function () {
       const sourceCodeDiv = codeBlock.closest("div.sourceCode");
       const hasLineHighlighting =
         codeBlock.querySelectorAll(SEL_HIGHLIGHT_FRAGMENT).length > 0;
-      const customIndices = sourceCodeDiv
-        ? parseFragmentIndices(
-          sourceCodeDiv.getAttribute(
-            "data-code-annotation-fragment-indices"
-          )
-        )
-        : [];
+      let customIndices = [];
+      if (sourceCodeDiv) {
+        const parsed = parseFragmentIndices(
+          sourceCodeDiv.getAttribute("data-code-annotation-fragment-indices")
+        );
+        warnInvalidFragmentIndices(
+          "code-annotation-fragment-indices",
+          parsed.invalid,
+          sourceCodeDiv
+        );
+        customIndices = parsed.indices;
+      }
 
       if (hasLineHighlighting && sourceCodeDiv && customIndices.length === 0) {
         // Deferred to Phase 2: line matching determines sync vs partial.
@@ -349,9 +482,15 @@ window.RevealJsCodefrag = function () {
     );
 
     for (const sourceCodeDiv of codeBlocks) {
-      const indices = parseFragmentIndices(
+      const parsed = parseFragmentIndices(
         sourceCodeDiv.getAttribute("data-code-line-fragment-indices")
       );
+      warnInvalidFragmentIndices(
+        "code-line-fragment-indices",
+        parsed.invalid,
+        sourceCodeDiv
+      );
+      const indices = parsed.indices;
       if (indices.length === 0) continue;
 
       const pre = sourceCodeDiv.querySelector("pre");
@@ -714,6 +853,7 @@ window.RevealJsCodefrag = function () {
         ],
       },
     });
+    fireAnnotationShown(anchor, anchor.closest("section"));
   }
 
   /**
@@ -802,8 +942,10 @@ window.RevealJsCodefrag = function () {
 
     init: function (deck) {
       const config = deck.getConfig();
+      patchTooltipOverflow = getPatchTooltipOverflow(config);
+      onAnnotationShownCallback = getOnAnnotationShown(config);
 
-      deck.on("ready", patchAnnotationTooltips);
+      if (patchTooltipOverflow) deck.on("ready", patchAnnotationTooltips);
 
       if (!getEnabled(config)) return;
 

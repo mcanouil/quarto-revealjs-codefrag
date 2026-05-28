@@ -336,6 +336,27 @@ Second point appears.
 Third point appears.
 :::
 
+## Annotations Inside Nested Containers
+
+Annotations placed inside a column layout are picked up like any other annotation, and the tooltip position respects the wrapping container.
+
+::: {.columns}
+::: {.column width="50%"}
+
+```{.r}
+mtcars |>            # <1>
+  head(3)            # <2>
+```
+
+1. Pipe the dataset.
+2. Take the first three rows.
+
+:::
+::: {.column width="50%"}
+Left column is a regular code block; tooltips render in this slide without leaving the column boundaries unless an ancestor explicitly clips overflow.
+:::
+:::
+
 # Configuration
 
 ## Disabling the Plugin
@@ -346,6 +367,32 @@ Disable fragment navigation while keeping tooltips:
 extensions:
   codefrag:
     enabled: false
+```
+
+## Disabling the Tooltip Overflow Patch
+
+Keep Quarto's default tooltip container by opting out of the appendTo patch:
+
+```yaml
+extensions:
+  codefrag:
+    patch-tooltip-overflow: false
+```
+
+## `on-annotation-shown` Hook
+
+Register a JavaScript callback to react to annotation reveals (analytics, voiceover, custom UI):
+
+```html
+<script>
+  window.revealConfig = window.revealConfig || {};
+  window.revealConfig.extensions = window.revealConfig.extensions || {};
+  window.revealConfig.extensions.codefrag = {
+    "on-annotation-shown": function (info) {
+      console.log("Annotation shown:", info.targetCell, info.targetAnnotation);
+    },
+  };
+</script>
 ```
 
 ## Features {.smaller}

@@ -108,15 +108,46 @@ Configure the plugin in your presentation YAML:
 extensions:
   codefrag:
     enabled: true
+    patch-tooltip-overflow: true
 ```
 
 ### Options
 
-| Option    | Type    | Default | Description                                       |
-| --------- | ------- | ------- | ------------------------------------------------- |
-| `enabled` | boolean | `true`  | Enable or disable annotation fragment navigation. |
+| Option                   | Type     | Default | Description                                                                                                                                                                       |
+| ------------------------ | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`                | boolean  | `true`  | Enable or disable annotation fragment navigation.                                                                                                                                 |
+| `patch-tooltip-overflow` | boolean  | `true`  | Move annotation tooltips out of clipping ancestors so they are not hidden by inner `overflow: hidden` containers. Set to `false` to keep Quarto's default `appendTo` target.      |
+| `on-annotation-shown`    | function | unset   | Optional JavaScript callback fired after an annotation tooltip is shown (live navigation and PDF export). Receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`.       |
 
-Setting `enabled: false` disables fragment creation while keeping the tooltip overflow fix active.
+Setting `enabled: false` disables fragment creation while leaving the tooltip overflow fix active (unless `patch-tooltip-overflow` is also `false`).
+
+When `patch-tooltip-overflow` is `true`, the plugin only moves tooltips when an ancestor between the anchor and the slide actually clips overflow.
+Layouts such as `::: {.columns}` keep Quarto's default positioning.
+
+### `on-annotation-shown` callback
+
+`on-annotation-shown` cannot be set from YAML because YAML cannot serialise functions.
+Register it from JavaScript before Reveal initialises, for example via `include-in-header`:
+
+```html
+<script>
+  window.revealConfig = window.revealConfig || {};
+  window.revealConfig.extensions = window.revealConfig.extensions || {};
+  window.revealConfig.extensions.codefrag = {
+    "on-annotation-shown": function (info) {
+      console.log("Annotation shown:", info.targetCell, info.targetAnnotation);
+    },
+  };
+</script>
+```
+
+The callback runs after every tooltip show, including during PDF export.
+Exceptions thrown by the callback are caught and logged with `console.error`; they never break navigation.
+
+### Invalid index tokens
+
+Non-numeric tokens in `code-annotation-fragment-indices` or `code-line-fragment-indices` emit a `console.warn` identifying the offending position and raw value.
+The affected slot is left unindexed (annotations) or unchanged (highlight steps) so the rest of the list still applies.
 
 ## Example
 
