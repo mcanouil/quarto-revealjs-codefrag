@@ -106,6 +106,10 @@ const EXPECTED = {
     { index: "3", label: "annot-2" },
     { index: "3", label: "highlight-lines=5" },
   ],
+  "6/2": [
+    { index: "0", label: "annot-1" },
+    { index: "1", label: "annot-2" },
+  ],
 };
 
 async function loadPuppeteer() {

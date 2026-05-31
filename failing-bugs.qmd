@@ -1,0 +1,35 @@
+---
+title: "Codefrag Failing Bugs Reproduction"
+format:
+  revealjs:
+    output-file: failing-bugs
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+---
+
+## Bug A: parseFragmentIndices returns nulls silently
+
+Mixing a non-numeric token (`"abc"`) with valid indices should not silently leave gaps; the user expects either a warning or fail-fast.
+
+```{.r code-annotation-fragment-indices="2,abc,6"}
+library(dplyr)            # <1>
+mtcars |>                 # <2>
+  filter(mpg > 20)        # <3>
+```
+
+1. Load dplyr.
+2. Pipe mtcars.
+3. Filter rows.
+
+## Bug B: code-line-fragment-indices with malformed token
+
+The middle token is invalid; the corresponding clone should not silently retain whatever index Reveal.js assigned.
+
+```{.r code-line-numbers="|1|3|5" code-line-fragment-indices="1,2,foo,6"}
+x <- 1:10
+
+y <- x^2
+
+plot(x, y)
+```
