@@ -1,4 +1,4 @@
-# _schema.yml for "codefrag" revealjs-plugin extension
+# Schema for the codefrag extension
 # Describes plugin options for IDE tooling and runtime validation.
 
 # Extension-level metadata options.
@@ -7,7 +7,7 @@
 #     codefrag:
 #       enabled: true
 
-$schema: https://m.canouil.dev/quarto-wizard/assets/schema/v1/extension-schema.json
+$schema: https://m.canouil.dev/quarto-wizard/assets/schema/v2/extension-schema.json
 
 options:
   enabled:
