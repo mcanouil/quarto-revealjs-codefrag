@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.0 (2026-05-31)
+
 ### Bug Fixes
 
 - fix: Skip `popperInstance.update()` when the anchor is detached between the synthetic `click()` and the deferred `requestAnimationFrame`, preventing a no-op error when slide changes interrupt tooltip mounting.
