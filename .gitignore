@@ -6,3 +6,5 @@ failing-bugs.html
 failing-bugs_files/
 index.html
 screenshots/
+/.quarto/
+**/*.quarto_ipynb

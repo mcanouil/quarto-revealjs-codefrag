@@ -1,0 +1,73 @@
+---
+title: "Reference"
+subtitle: "Everything the codefrag plugin does."
+description: "The complete codefrag behaviour: the options, the per-block fragment indices, the tooltip overflow fix, and the callback."
+---
+
+## Enabling the plugin
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+```
+
+`code-annotations: select` is Quarto's own option, and is what makes the annotations interactive in the first place.
+
+## Options
+
+```yaml
+extensions:
+  codefrag:
+    enabled: true
+    patch-tooltip-overflow: true
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `true` | Whether annotations are turned into fragments. Anything other than a boolean is read as `true`. |
+| `patch-tooltip-overflow` | `true` | Move the tooltip up to the slide when an ancestor between the anchor and the slide clips overflow. Anything other than a boolean is read as `true`. |
+| `on-annotation-shown` | none | A JavaScript function run after a tooltip is shown. Anything that is not a function is ignored. |
+
+: Options under `extensions.codefrag`. {.striped .hover tbl-colwidths="[26,10,64]"}
+
+`on-annotation-shown` receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`, and an exception it throws is written to the console rather than stopping navigation.
+
+::: {.callout-important}
+## The options block is not wired up yet
+
+The plugin reads these three from the deck configuration, and Quarto puts a key there only when the extension declares it under `contributes.revealjs-plugins`.
+`codefrag` declares none, so nothing written under `extensions.codefrag` reaches the plugin and all three keep their defaults.
+The per-block attributes below are unaffected and work as documented.
+:::
+
+## Per-block fragment indices
+
+A code block can say when each annotation appears, rather than taking them in order.
+
+| Attribute | Description |
+| --- | --- |
+| `code-annotation-fragment-indices` | Comma-separated fragment indices, one per annotation, in annotation order: `"2,4,6"`. |
+| `code-line-fragment-indices` | Comma-separated indices for each line-highlight step, counting the original code as step 0: `"0,2,4,6"`. Needs `code-line-numbers`. |
+
+: Attributes accepted on a code block. {.striped .hover tbl-colwidths="[40,60]"}
+
+A token that is not a number writes a console warning and leaves that slot alone, rather than failing the slide.
+A list whose length does not match the number of annotations, or of highlight steps, also writes a console warning and the extra or missing slots are left as they were.
+
+## Line highlighting
+
+When a block uses `code-line-numbers`, the annotations synchronise with the highlighted lines, so a step both moves the highlight and shows the matching note.
+
+## Printing
+
+In `print-pdf` output the plugin clones each annotated slide once per annotation step, so a step that a reader would have arrowed through becomes a page of its own with that annotation open.
+Markers are given a circular border under `@media print`, which keeps them legible once the hover styling is gone.
+
+## Limitations
+
+- RevealJS only.
+- Needs Quarto's `code-annotations` to be interactive, which means `select` or `hover`.
+- The three options are not reachable from YAML, as noted above.

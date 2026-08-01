@@ -1,16 +1,8 @@
 # Reveal.js Code Annotation Fragments Extension for Quarto
 
-A Reveal.js plugin that enables fragment-based keyboard navigation through code annotations in Quarto presentations.
-This extension creates invisible fragment triggers for each annotation, allowing you to step through annotations using arrow keys or space bar.
+A Reveal.js plugin that turns Quarto code annotations into fragments, so they are stepped through with the arrow keys rather than arriving all at once.
 
-## Features
-
-- **Fragment Navigation**: Code annotations are treated as fragments, enabling smooth keyboard-based navigation.
-- **Tooltip Display**: Annotation tooltips (via tippy.js) appear automatically when fragments are revealed.
-- **Line Highlight Sync**: When line highlighting is present, annotations synchronise with the highlighted lines.
-- **Bidirectional Navigation**: Navigate forwards and backwards through annotations seamlessly.
-- **Overflow Fix**: Tooltips are repositioned to avoid clipping by inner containers.
-- **PDF Export Support**: Annotation markers are styled for print output.
+Annotations synchronise with line highlighting where both are used, and the tooltips are repositioned so they are not clipped.
 
 ## Installation
 
@@ -21,138 +13,12 @@ quarto add mcanouil/quarto-revealjs-codefrag@1.1.0
 This will install the extension under the `_extensions` subdirectory.
 If you are using version control, you will want to check in this directory.
 
-## Usage
+## Documentation
 
-### Basic Setup
+The full documentation lives at <https://m.canouil.dev/quarto-revealjs-codefrag/>: every option, the per-block fragment indices, the tooltip overflow fix, the callback, and a deck to step through.
 
-Add the plugin to your Reveal.js presentation:
+[`example.qmd`](example.qmd) is a short, standalone starting point you can copy.
 
-```yaml
----
-title: "My Presentation"
-format:
-  revealjs:
-    code-annotations: select
-revealjs-plugins:
-  - codefrag
----
-```
+## Licence
 
-### Code Annotations
-
-Use Quarto's native code annotation syntax.
-The plugin automatically makes each annotation navigable as a fragment.
-
-````markdown
-```{.r}
-library(dplyr)     # <1>
-
-mtcars |>          # <2>
-  filter(mpg > 20) # <3>
-```
-
-1. Load the dplyr package.
-2. Start with the mtcars dataset.
-3. Filter rows where mpg is greater than 20.
-````
-
-### Navigation
-
-- Use **arrow keys** or **space bar** to step through annotations.
-- Press **right arrow** or **space** to reveal the next annotation tooltip.
-- Press **left arrow** to return to the previous annotation.
-- Annotations are treated as fragments in the presentation flow.
-
-### Custom Fragment Indices
-
-Two code-block attributes let you control fragment ordering when interleaving annotations or highlight steps with other fragments on the slide.
-Only the relative order of the values matters; Reveal.js compacts the indices after init, so `0,2,4,6` and `0,1,2,3` behave identically once any gaps have been absorbed by surrounding fragments.
-
-Override the index of each annotation with `code-annotation-fragment-indices` (comma-separated, in annotation order):
-
-````markdown
-```{.r code-annotation-fragment-indices="2,4,6"}
-library(dplyr)     # <1>
-mtcars |>          # <2>
-  filter(mpg > 20) # <3>
-```
-````
-
-Override the index of each line-highlight step with `code-line-fragment-indices`.
-The list starts with the original code (step 0) and covers every highlight step:
-
-````markdown
-```{.r code-line-numbers="|1|3|5" code-line-fragment-indices="1,2,4,6"}
-x <- 1:10
-y <- x^2
-plot(x, y)
-```
-````
-
-## How it Works
-
-The plugin automatically:
-
-1. Detects all annotated code blocks (`.code-annotation-code`) in your slides.
-2. Creates invisible fragment elements for each annotation anchor.
-3. Leaves fragment indices for Reveal.js to assign by DOM order, unless `code-annotation-fragment-indices` (or, for highlight steps, `code-line-fragment-indices`) specifies explicit values.
-4. Listens to fragment events to show and hide annotation tooltips.
-5. When line highlighting is present, matches annotations against highlight steps by line numbers so matched pairs share a navigation step and unmatched annotations follow the last highlight step on the slide.
-6. On PDF export, clones annotated slides so each annotation appears on its own page with the correct tooltip rendered.
-
-## Configuration
-
-Configure the plugin in your presentation YAML:
-
-```yaml
-extensions:
-  codefrag:
-    enabled: true
-    patch-tooltip-overflow: true
-```
-
-### Options
-
-| Option                   | Type     | Default | Description                                                                                                                                                                       |
-| ------------------------ | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`                | boolean  | `true`  | Enable or disable annotation fragment navigation.                                                                                                                                 |
-| `patch-tooltip-overflow` | boolean  | `true`  | Move annotation tooltips out of clipping ancestors so they are not hidden by inner `overflow: hidden` containers. Set to `false` to keep Quarto's default `appendTo` target.      |
-| `on-annotation-shown`    | function | unset   | Optional JavaScript callback fired after an annotation tooltip is shown (live navigation and PDF export). Receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`.       |
-
-Setting `enabled: false` disables fragment creation while leaving the tooltip overflow fix active (unless `patch-tooltip-overflow` is also `false`).
-
-When `patch-tooltip-overflow` is `true`, the plugin only moves tooltips when an ancestor between the anchor and the slide actually clips overflow.
-Layouts such as `::: {.columns}` keep Quarto's default positioning.
-
-### `on-annotation-shown` callback
-
-`on-annotation-shown` cannot be set from YAML because YAML cannot serialise functions.
-Register it from JavaScript before Reveal initialises, for example via `include-in-header`:
-
-```html
-<script>
-  window.revealConfig = window.revealConfig || {};
-  window.revealConfig.extensions = window.revealConfig.extensions || {};
-  window.revealConfig.extensions.codefrag = {
-    "on-annotation-shown": function (info) {
-      console.log("Annotation shown:", info.targetCell, info.targetAnnotation);
-    },
-  };
-</script>
-```
-
-The callback runs after every tooltip show, including during PDF export.
-Exceptions thrown by the callback are caught and logged with `console.error`; they never break navigation.
-
-### Invalid index tokens
-
-Non-numeric tokens in `code-annotation-fragment-indices` or `code-line-fragment-indices` emit a `console.warn` identifying the offending position and raw value.
-The affected slot is left unindexed (annotations) or unchanged (highlight steps) so the rest of the list still applies.
-
-## Example
-
-Here is the source code for a comprehensive example: [example.qmd](example.qmd).
-
-Output of `example.qmd`:
-
-- [Reveal.js](https://m.canouil.dev/quarto-revealjs-codefrag/).
+[MIT](https://github.com/mcanouil/quarto-revealjs-codefrag?tab=MIT-1-ov-file#readme).
