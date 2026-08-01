@@ -51,6 +51,8 @@ Then annotate code as you would anywhere in Quarto.
 
 The [preview deck](preview.html) is built by this site: press the arrow keys and each annotation arrives in turn.
 
+![](preview.html){.embed-art loading="lazy" title="A deck stepping through code annotations" style="--atelier-embed-art-ratio: 1.78;"}
+
 See the [Reference](reference.qmd) for every option, and the [Examples](examples.qmd) for the source behind the deck.
 
 ## Where it works
