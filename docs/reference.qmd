@@ -1,0 +1,70 @@
+---
+title: "Reference"
+subtitle: "Everything the codefrag plugin does."
+description: "The complete codefrag behaviour: the options, the per-block fragment indices, the tooltip overflow fix, and the callback."
+---
+
+## Enabling the plugin
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+```
+
+`code-annotations: select` is Quarto's own option, and is what makes the annotations interactive in the first place.
+
+## Options
+
+```yaml
+format:
+  revealjs:
+    codefrag:
+      enabled: true
+      patch-tooltip-overflow: true
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `true` | Whether annotations are turned into fragments. |
+| `patch-tooltip-overflow` | `true` | Move the tooltip to an ancestor that does not clip it, usually the slide itself. `false` keeps Quarto's own target. |
+| `on-annotation-shown` | | A JavaScript callback run when a tooltip is shown. |
+
+: Options under `codefrag`. {.striped .hover tbl-colwidths="[28,12,60]"}
+
+::: {.callout-note}
+`on-annotation-shown` cannot be written in YAML, which has no way to hold a function.
+Set it in HTML instead, through `format.revealjs.include-in-header`.
+
+It receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`.
+:::
+
+## Per-block fragment indices
+
+A code block can say when each annotation appears, rather than taking them in order.
+
+| Attribute | Description |
+| --- | --- |
+| `codefrag-annotations` | Comma-separated fragment indices, one per annotation, in annotation order: `"2,4,6"`. |
+| `codefrag-lines` | Comma-separated indices for each line-highlight step, counting the original code as step 0: `"0,2,4,6"`. Needs `code-line-numbers`. |
+
+: Attributes accepted on a code block. {.striped .hover tbl-colwidths="[28,72]"}
+
+A token that is not a number writes a console warning and leaves that slot alone, rather than failing the slide.
+
+## Line highlighting
+
+When a block uses `code-line-numbers`, the annotations synchronise with the highlighted lines, so a step both moves the highlight and shows the matching note.
+
+## Printing
+
+Annotation markers are styled for print, so a PDF export keeps them readable.
+The stepping itself does not survive, since it is fragment navigation.
+
+## Limitations
+
+- RevealJS only.
+- Needs Quarto's `code-annotations` to be interactive, which means `select` or `hover`.
+- The callback has to be given in HTML rather than YAML.

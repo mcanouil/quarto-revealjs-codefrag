@@ -1,0 +1,68 @@
+---
+title: "RevealJS Codefrag"
+subtitle: "Code annotations, one arrow press at a time."
+description: "What the codefrag plugin does, how to enable it, and how annotations become fragments."
+authors:
+  - name: "Mickaël CANOUIL, _Ph.D._"
+    orcid: "0000-0002-3396-4549"
+    url: "https://mickael.canouil.fr"
+---
+
+Quarto's code annotations are a good way to explain a block line by line.
+On a slide they all arrive at once, so the audience reads the last note while the speaker is still on the first.
+
+`codefrag` makes each annotation a fragment.
+The arrow keys step through them, the tooltip appears as each is revealed, and the annotations follow the highlighted lines when both are used.
+
+## Installation
+
+```bash
+quarto add {{< var extension.reference >}}
+```
+
+This will install the extension under the `_extensions` subdirectory.
+If you are using version control, you will want to check in this directory.
+
+Or install it from your editor with [Quarto Wizard](https://m.canouil.dev/quarto-wizard):
+
+::: {.btn-group role="group" aria-label="Quarto Wizard installer options"}
+
+[Visual Studio Code](vscode://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in Visual Studio Code using the Quarto Wizard extension."}
+[Positron](positron://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in Positron using the Quarto Wizard extension."}
+[VSCodium](vscodium://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in VSCodium using the Quarto Wizard extension."}
+
+:::
+
+## Quick start
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+```
+
+Then annotate code as you would anywhere in Quarto.
+
+`code-annotations: select` is what makes the annotations interactive; the plugin turns them into fragments from there.
+
+## Try it
+
+The [preview deck](preview.html) is built by this site: press the arrow keys and each annotation arrives in turn.
+
+See the [Reference](reference.qmd) for every option, and the [Examples](examples.qmd) for the source behind the deck.
+
+## Where it works
+
+RevealJS.
+
+Annotation markers are styled for print, so a PDF export keeps them legible even though the stepping is gone.
+
+## Links
+
+- [Reference](reference.qmd) for every option and attribute.
+- [Examples](examples.qmd) for the source behind the deck.
+- [Preview deck](preview.html) to step through.
+- [Changelog](changelog.qmd) for what each release changed.
+- [Source and issues](https://github.com/mcanouil/quarto-revealjs-codefrag) on GitHub.

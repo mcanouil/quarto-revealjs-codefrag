@@ -1,0 +1,90 @@
+---
+title: "Examples"
+subtitle: "The source behind the deck."
+description: "Annotated code blocks as the plugin steps through them, with the source for each."
+---
+
+The [preview deck](preview.html) is built by this site.
+This page is the source behind it.
+
+## Annotations as fragments
+
+````markdown
+```r
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid") |>         # <3>
+  select(name, height, mass)            # <4>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+4. Keep three columns.
+````
+
+Each annotation is a fragment, so the arrow keys reveal them one at a time with their tooltips.
+
+## With line highlighting
+
+````markdown
+```{.r code-line-numbers="1|2-3|4"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid") |>         # <3>
+  select(name, height, mass)            # <4>
+```
+````
+
+The annotations follow the highlighted lines, so one press moves the highlight and shows the note that goes with it.
+
+## Choosing when each appears
+
+````markdown
+```{.r codefrag-annotations="2,4,6"}
+```
+````
+
+The annotations then appear at fragment indices two, four, and six rather than in sequence, which is how they are interleaved with other fragments on the slide.
+
+````markdown
+```{.r code-line-numbers="1|2|3" codefrag-lines="0,2,4,6"}
+```
+````
+
+`codefrag-lines` does the same for the highlight steps, counting the unhighlighted code as step zero.
+
+A token that is not a number writes a console warning and leaves that slot alone.
+
+## The tooltip overflow fix
+
+```yaml
+format:
+  revealjs:
+    codefrag:
+      patch-tooltip-overflow: true
+```
+
+A tooltip inside a scrolling or clipped container is cut off.
+The plugin moves it to an ancestor that does not clip, usually the slide, which is on by default.
+
+## A callback
+
+```yaml
+format:
+  revealjs:
+    include-in-header:
+      text: |
+        <script>
+          window.codefragOnAnnotationShown = function (context) {
+            console.log(context.targetAnnotation);
+          };
+        </script>
+```
+
+YAML cannot hold a function, so the callback is given in HTML.
+It receives the anchor, the slide, the target cell, the target annotation, and the tippy instance.
+
+## Source
+
+The repository ships a short, standalone starting point you can copy: [`example.qmd`](https://github.com/mcanouil/quarto-revealjs-codefrag/blob/main/example.qmd).

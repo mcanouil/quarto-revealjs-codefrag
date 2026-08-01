@@ -1,0 +1,47 @@
+---
+title: "Codefrag in a deck"
+subtitle: "Annotations, one arrow press at a time"
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+---
+
+## Stepping through annotations
+
+Press the arrow keys: each annotation is revealed in turn, with its tooltip.
+
+```r
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid") |>         # <3>
+  select(name, height, mass)            # <4>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+4. Keep three columns.
+
+## With line highlighting
+
+Annotations follow the highlighted lines when both are present.
+
+```{.r code-line-numbers="1|2-3|4"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid") |>         # <3>
+  select(name, height, mass)            # <4>
+```
+
+1. Load the package.
+2. Start from the dataset, and keep the droids.
+3. Still there.
+4. Keep three columns.
+
+## Why it helps
+
+Without the plugin, the annotations are all present at once and the audience reads ahead.
