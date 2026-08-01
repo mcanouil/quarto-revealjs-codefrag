@@ -19,26 +19,28 @@ revealjs-plugins:
 ## Options
 
 ```yaml
-format:
-  revealjs:
-    codefrag:
-      enabled: true
-      patch-tooltip-overflow: true
+extensions:
+  codefrag:
+    enabled: true
+    patch-tooltip-overflow: true
 ```
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `enabled` | `true` | Whether annotations are turned into fragments. |
-| `patch-tooltip-overflow` | `true` | Move the tooltip to an ancestor that does not clip it, usually the slide itself. `false` keeps Quarto's own target. |
-| `on-annotation-shown` | | A JavaScript callback run when a tooltip is shown. |
+| `enabled` | `true` | Whether annotations are turned into fragments. Anything other than a boolean is read as `true`. |
+| `patch-tooltip-overflow` | `true` | Move the tooltip up to the slide when an ancestor between the anchor and the slide clips overflow. Anything other than a boolean is read as `true`. |
+| `on-annotation-shown` | none | A JavaScript function run after a tooltip is shown. Anything that is not a function is ignored. |
 
-: Options under `codefrag`. {.striped .hover tbl-colwidths="[28,12,60]"}
+: Options under `extensions.codefrag`. {.striped .hover tbl-colwidths="[26,10,64]"}
 
-::: {.callout-note}
-`on-annotation-shown` cannot be written in YAML, which has no way to hold a function.
-Set it in HTML instead, through `format.revealjs.include-in-header`.
+`on-annotation-shown` receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`, and an exception it throws is written to the console rather than stopping navigation.
 
-It receives `{ anchor, slide, targetCell, targetAnnotation, tippy }`.
+::: {.callout-important}
+## The options block is not wired up yet
+
+The plugin reads these three from the deck configuration, and Quarto puts a key there only when the extension declares it under `contributes.revealjs-plugins`.
+`codefrag` declares none, so nothing written under `extensions.codefrag` reaches the plugin and all three keep their defaults.
+The per-block attributes below are unaffected and work as documented.
 :::
 
 ## Per-block fragment indices
@@ -47,12 +49,13 @@ A code block can say when each annotation appears, rather than taking them in or
 
 | Attribute | Description |
 | --- | --- |
-| `codefrag-annotations` | Comma-separated fragment indices, one per annotation, in annotation order: `"2,4,6"`. |
-| `codefrag-lines` | Comma-separated indices for each line-highlight step, counting the original code as step 0: `"0,2,4,6"`. Needs `code-line-numbers`. |
+| `code-annotation-fragment-indices` | Comma-separated fragment indices, one per annotation, in annotation order: `"2,4,6"`. |
+| `code-line-fragment-indices` | Comma-separated indices for each line-highlight step, counting the original code as step 0: `"0,2,4,6"`. Needs `code-line-numbers`. |
 
-: Attributes accepted on a code block. {.striped .hover tbl-colwidths="[28,72]"}
+: Attributes accepted on a code block. {.striped .hover tbl-colwidths="[40,60]"}
 
 A token that is not a number writes a console warning and leaves that slot alone, rather than failing the slide.
+A list whose length does not match the number of annotations, or of highlight steps, also writes a console warning and the extra or missing slots are left as they were.
 
 ## Line highlighting
 
@@ -60,11 +63,11 @@ When a block uses `code-line-numbers`, the annotations synchronise with the high
 
 ## Printing
 
-Annotation markers are styled for print, so a PDF export keeps them readable.
-The stepping itself does not survive, since it is fragment navigation.
+In `print-pdf` output the plugin clones each annotated slide once per annotation step, so a step that a reader would have arrowed through becomes a page of its own with that annotation open.
+Markers are given a circular border under `@media print`, which keeps them legible once the hover styling is gone.
 
 ## Limitations
 
 - RevealJS only.
 - Needs Quarto's `code-annotations` to be interactive, which means `select` or `hover`.
-- The callback has to be given in HTML rather than YAML.
+- The three options are not reachable from YAML, as noted above.

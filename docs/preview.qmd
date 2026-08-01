@@ -1,6 +1,7 @@
 ---
 title: "Codefrag in a deck"
 subtitle: "Annotations, one arrow press at a time"
+description: "A RevealJS deck with the codefrag plugin enabled, so the annotations can be stepped through."
 format:
   revealjs:
     theme: default
@@ -41,6 +42,36 @@ starwars |>                             # <2>
 2. Start from the dataset, and keep the droids.
 3. Still there.
 4. Keep three columns.
+
+## Choosing when each appears
+
+`code-annotation-fragment-indices` interleaves the annotations with the other fragments on the slide.
+
+::: {.fragment fragment-index=1}
+First, a package.
+:::
+
+::: {.fragment fragment-index=3}
+Then the data.
+:::
+
+::: {.fragment fragment-index=5}
+Then the filter.
+:::
+
+::: {.fragment fragment-index=2}
+
+```{.r code-annotation-fragment-indices="2,4,6"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+
+:::
 
 ## Why it helps
 

@@ -59,7 +59,7 @@ See the [Reference](reference.qmd) for every option, and the [Examples](examples
 
 RevealJS.
 
-Annotation markers are styled for print, so a PDF export keeps them legible even though the stepping is gone.
+A `print-pdf` export keeps the stepping as pages: each annotated slide is cloned once per step, with that annotation open.
 
 ## Links
 

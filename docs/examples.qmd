@@ -24,6 +24,7 @@ starwars |>                             # <2>
 ````
 
 Each annotation is a fragment, so the arrow keys reveal them one at a time with their tooltips.
+This is the first slide of [the deck](preview.html), which is the only way to see it: the stepping is the point.
 
 ## With line highlighting
 
@@ -41,49 +42,40 @@ The annotations follow the highlighted lines, so one press moves the highlight a
 ## Choosing when each appears
 
 ````markdown
-```{.r codefrag-annotations="2,4,6"}
+```{.r code-annotation-fragment-indices="2,4,6"}
 ```
 ````
 
 The annotations then appear at fragment indices two, four, and six rather than in sequence, which is how they are interleaved with other fragments on the slide.
 
 ````markdown
-```{.r code-line-numbers="1|2|3" codefrag-lines="0,2,4,6"}
+```{.r code-line-numbers="1|2|3" code-line-fragment-indices="0,2,4,6"}
 ```
 ````
 
-`codefrag-lines` does the same for the highlight steps, counting the unhighlighted code as step zero.
+`code-line-fragment-indices` does the same for the highlight steps, counting the unhighlighted code as step zero.
 
-A token that is not a number writes a console warning and leaves that slot alone.
+A token that is not a number writes a console warning and leaves that slot alone, and so does a list whose length does not match the number of annotations or steps.
+
+The [deck](preview.html) has a slide for this: the paragraphs and the annotations arrive alternately rather than in two runs.
 
 ## The tooltip overflow fix
 
-```yaml
-format:
-  revealjs:
-    codefrag:
-      patch-tooltip-overflow: true
-```
+A tooltip inside a container that clips its overflow is cut off.
+The plugin walks up from the annotation marker to the slide, and if anything on the way sets `overflow: hidden` it moves the tooltip to the slide instead.
+When nothing clips, Quarto's own placement is left alone, so a `::: {.columns}` layout keeps its natural anchor.
 
-A tooltip inside a scrolling or clipped container is cut off.
-The plugin moves it to an ancestor that does not clip, usually the slide, which is on by default.
+This is on by default and there is nothing to write.
 
 ## A callback
 
-```yaml
-format:
-  revealjs:
-    include-in-header:
-      text: |
-        <script>
-          window.codefragOnAnnotationShown = function (context) {
-            console.log(context.targetAnnotation);
-          };
-        </script>
-```
+`on-annotation-shown` is a JavaScript function run after each tooltip is shown, receiving the anchor, the slide, the target cell, the target annotation, and the tippy instance.
+An exception it throws is written to the console rather than stopping the navigation.
 
-YAML cannot hold a function, so the callback is given in HTML.
-It receives the anchor, the slide, the target cell, the target annotation, and the tippy instance.
+::: {.callout-important}
+`on-annotation-shown`, `enabled`, and `patch-tooltip-overflow` are read from the deck configuration, and nothing populates it for this extension.
+See the [Reference](reference.qmd#options).
+:::
 
 ## Source
 
