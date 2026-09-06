@@ -9,6 +9,8 @@ format:
     code-annotations: select
 revealjs-plugins:
   - codefrag
+filters:
+  - codefrag
 ---
 
 ## Stepping through annotations

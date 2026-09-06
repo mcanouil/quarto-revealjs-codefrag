@@ -12,9 +12,16 @@ format:
     code-annotations: select
 revealjs-plugins:
   - codefrag
+filters:
+  - codefrag
 ```
 
 `code-annotations: select` is Quarto's own option, and is what makes the annotations interactive in the first place.
+
+The `filters:` entry is optional and changes nothing in the deck.
+It runs a check that reads the `extensions.codefrag` block and reports a key or a value the extension does not accept.
+Quarto expands a contributed filter only from a `filters:` entry, so `revealjs-plugins:` on its own leaves the check out.
+The check reports and never stops a render.
 
 ## Options
 
