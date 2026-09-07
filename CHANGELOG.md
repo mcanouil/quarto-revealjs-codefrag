@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.0 (2026-09-07)
+
 ### New Features
 
 - feat: Check the document configuration against the extension schema and report what it does not accept. The deck must name `codefrag` under `filters:` as well as under `revealjs-plugins:` for the check to run. (#14)
