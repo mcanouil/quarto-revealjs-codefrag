@@ -20,9 +20,15 @@ website:
   title: "RevealJS Codefrag"
   description: "A RevealJS plugin that turns Quarto code annotations into fragments, so they are stepped through with the arrow keys."
   # No trailing slash: Quarto builds the social image URL by concatenating this
-  # with a leading-slash image path, without normalising.
+  # with the image path, without normalising.
   site-url: &site-url https://m.canouil.dev/quarto-revealjs-codefrag
   repo-url: https://github.com/mcanouil/quarto-revealjs-codefrag
+  open-graph:
+    image: assets/social/og-image.png
+    image-alt: "The quarto-revealjs-codefrag social card: the extension name and the \"extension\" badge over the line \"Step through code annotations as fragments in slides\", beside a dark code window showing slides.qmd."
+  twitter-card:
+    image: assets/social/og-image.png
+    image-alt: "The quarto-revealjs-codefrag social card: the extension name and the \"extension\" badge over the line \"Step through code annotations as fragments in slides\", beside a dark code window showing slides.qmd."
   # The Quarto project root is docs/, so without this the "Edit this page" links
   # point at the repository root and 404.
   repo-subdir: docs
