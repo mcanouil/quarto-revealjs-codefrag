@@ -8,6 +8,7 @@
 
 ### Documentation
 
+- docs: Add worked examples for each code block attribute, each line matching rule, each console message and each print setting. Correct the pages where they did not match the code.
 - docs: Serve the extension's social card as the Open Graph image, so a shared link shows the card rather than the first image on the page. (#18)
 
 ### Refactoring

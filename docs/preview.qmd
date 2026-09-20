@@ -29,23 +29,66 @@ starwars |>                             # <2>
 3. Keep the droids.
 4. Keep three columns.
 
-## With line highlighting
+## Highlights that match the annotations
 
-Annotations follow the highlighted lines when both are present.
+Each highlight covers one line, and each annotation marks the same line.
+One press moves the highlight and opens the note together.
 
-```{.r code-line-numbers="1|2-3|4"}
+```{.r code-line-numbers="|1|2|3"}
 library(dplyr)                          # <1>
 starwars |>                             # <2>
-  filter(species == "Droid") |>         # <3>
-  select(name, height, mass)            # <4>
+  filter(species == "Droid")            # <3>
 ```
 
 1. Load the package.
-2. Start from the dataset, and keep the droids.
-3. Still there.
-4. Keep three columns.
+2. Start from the dataset.
+3. Keep the droids.
 
-## Choosing when each appears
+## An annotation inside a highlighted range
+
+The first highlight covers lines one and two, and the first note marks line two alone.
+The note still pairs with that highlight, because its line sits inside the range.
+
+```{.r code-line-numbers="|1-2|3"}
+library(dplyr)
+starwars |>                             # <1>
+  filter(species == "Droid")            # <2>
+```
+
+1. Inside the first highlight.
+2. The third line.
+
+## A note that is open before the first press
+
+There is no leading `|` below, so line one is highlighted as soon as the slide opens.
+The note on line one opens with it and takes no step of its own.
+
+```{.r code-line-numbers="1|2|3"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Open before the first press.
+2. Start from the dataset.
+3. Keep the droids.
+
+## A note that matches no highlight
+
+Two highlights cover lines one and two, and the third note marks line three.
+That note pairs with nothing, so it gets a step after the highlights.
+
+```{.r code-line-numbers="|1|2"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Last, with the highlight left on line two.
+
+## Choosing when each annotation appears
 
 `code-annotation-fragment-indices` interleaves the annotations with the other fragments on the slide.
 
@@ -73,6 +116,44 @@ starwars |>                             # <2>
 2. Start from the dataset.
 3. Keep the droids.
 
+:::
+
+## Choosing when each highlight appears
+
+`code-line-fragment-indices` does the same for the highlight steps.
+The paragraph below was given index one, and the two highlights were given two and four, so the paragraph arrives first.
+
+::: {.fragment fragment-index=1}
+Set up the two panels.
+:::
+
+```{.r code-line-numbers="|2|3" code-line-fragment-indices="0,2,4"}
+par(mfrow = c(1, 2))
+plot(cars)
+plot(cars, col = "red")
+```
+
+## Annotations in a column layout
+
+A column clips nothing, so each tooltip stays where Quarto put it.
+
+::: {.columns}
+::: {.column width="50%"}
+
+```r
+starwars |>                             # <1>
+  head(3)                               # <2>
+```
+
+1. Start from the dataset.
+2. Take the first three rows.
+
+:::
+::: {.column width="50%"}
+
+The plugin moves a tooltip up to the slide only when something between the marker and the slide clips its overflow.
+
+:::
 :::
 
 ## Why it helps

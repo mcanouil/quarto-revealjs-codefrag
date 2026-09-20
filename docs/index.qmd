@@ -12,7 +12,7 @@ Quarto's code annotations are a good way to explain a block line by line.
 On a slide they all arrive at once, so the audience reads the last note while the speaker is still on the first.
 
 `codefrag` makes each annotation a fragment.
-The arrow keys step through them, the tooltip appears as each is revealed, and the annotations follow the highlighted lines when both are used.
+The arrow keys step through them, the tooltip appears as each is revealed, and an annotation can share a step with the highlight that covers its lines.
 
 ## Installation
 
@@ -59,7 +59,8 @@ See the [Reference](reference.qmd) for every option, and the [Examples](examples
 
 RevealJS.
 
-A `print-pdf` export keeps the stepping as pages: each annotated slide is cloned once per step, with that annotation open.
+A `print-pdf` export keeps the stepping as pages: each annotated slide is cloned once per annotation, with that note open.
+See the [Examples](examples.qmd#printing) for what `pdf-separate-fragments` changes.
 
 ## Links
 

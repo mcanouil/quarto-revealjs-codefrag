@@ -1,11 +1,23 @@
 ---
 title: "Examples"
-subtitle: "The source behind the deck."
-description: "Annotated code blocks as the plugin steps through them, with the source for each."
+subtitle: "Worked decks, and the step order each one produces."
+description: "Worked source for every attribute and behaviour of the codefrag plugin, with the step order it produces and the console messages it writes."
 ---
 
-The [preview deck](preview.html) is built by this site.
-This page is the source behind it.
+The plugin runs in the browser on a RevealJS deck, so nothing on this page can run here.
+Each section shows the source you write, then says what the deck does once the plugin has run.
+The [preview deck](preview.html) is where you step through the result.
+
+::: {.callout-note}
+
+## How the step orders on this page were read
+
+A slide is described by its steps, counting from the first arrow press.
+Each order was read out of the rendered deck in a browser, from the `data-fragment-index` attribute that RevealJS leaves on each fragment once the plugin has run, and not worked out from the source alone.
+:::
+
+The [Reference](reference.qmd) holds the options, the attributes, and the rules.
+This page shows them at work.
 
 ## Annotations as fragments
 
@@ -23,41 +35,292 @@ starwars |>                             # <2>
 4. Keep three columns.
 ````
 
-Each annotation is a fragment, so the arrow keys reveal them one at a time with their tooltips.
-This is the first slide of [the deck](preview.html), which is the only way to see it: the stepping is the point.
+The slide gets four steps, one per annotation, in annotation order.
+Each press reveals the next marker's tooltip and hides the one before it.
+This is the opening slide of [the deck](preview.html), which is the only way to see it: the stepping is the point.
 
-## With line highlighting
+Two annotated blocks on one slide keep their document order.
+The first block's annotations take the earlier steps, and the second block's annotations follow them.
+
+## Line highlighting
+
+A block that carries `code-line-numbers` as well as annotations is treated differently.
+The plugin reads the lines each highlight step covers, reads the lines each annotation marks, and pairs them up.
+A paired annotation shares the highlight's step, so one press moves the highlight and opens the matching note.
+
+There are four cases, and a slide can show more than one of them at once.
+[The deck](preview.html) has a slide for each.
+
+### The lines match exactly
 
 ````markdown
-```{.r code-line-numbers="1|2-3|4"}
+```{.r code-line-numbers="|1|2|3"}
 library(dplyr)                          # <1>
 starwars |>                             # <2>
-  filter(species == "Droid") |>         # <3>
-  select(name, height, mass)            # <4>
+  filter(species == "Droid")            # <3>
 ```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
 ````
 
-The annotations follow the highlighted lines, so one press moves the highlight and shows the note that goes with it.
+Each highlight covers one line, and each annotation marks the same line.
+The slide gets three steps, and each press moves the highlight and opens the note for that line together.
 
-## Choosing when each appears
+### The annotation sits inside the highlight
 
 ````markdown
+```{.r code-line-numbers="|1-2|3"}
+library(dplyr)
+starwars |>                             # <1>
+  filter(species == "Droid")            # <2>
+```
+
+1. Inside the first highlight.
+2. The third line.
+````
+
+The first highlight covers lines one and two, and the first annotation marks line two only.
+The lines are not equal, so the plugin falls back to containment: an annotation whose lines all sit inside a highlight's lines pairs with it.
+The slide gets two steps, and the first press highlights both lines and opens the note on line two.
+
+### The initial state matches an annotation
+
+````markdown
+```{.r code-line-numbers="1|2|3"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+````
+
+There is no leading `|` here, so line one is already highlighted when the slide opens.
+The first annotation marks line one, so its tooltip is open before any press, and it takes no step of its own.
+The slide gets two steps, for the second and third annotations.
+
+### An annotation matches nothing
+
+````markdown
+```{.r code-line-numbers="|1|2"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids, and no highlight covers this line.
+````
+
+The third annotation marks a line no highlight step covers.
+An unpaired annotation is given a step after the highest step already on the slide, one step each.
+The slide gets three steps: the first two pair with the highlights, and the third opens the last note with the highlight left where it was.
+
+## Choosing when each annotation appears
+
+`code-annotation-fragment-indices` takes one index per annotation, in annotation order.
+
+````markdown
+::: {.fragment fragment-index=1}
+First, a package.
+:::
+
+::: {.fragment fragment-index=3}
+Then the data.
+:::
+
+::: {.fragment fragment-index=5}
+Then the filter.
+:::
+
+::: {.fragment fragment-index=2}
+
 ```{.r code-annotation-fragment-indices="2,4,6"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
 ```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+
+:::
 ````
 
-The annotations then appear at fragment indices two, four, and six rather than in sequence, which is how they are interleaved with other fragments on the slide.
+The slide gets six steps, and the paragraphs and the annotations alternate.
+The first press shows the first paragraph.
+The second press shows the code block and the first annotation together, because both were given index two.
+The remaining presses alternate, paragraph then annotation, to the third annotation.
+
+The deck has a slide named "Choosing when each annotation appears" that steps through it.
+
+## Choosing when each highlight step appears
+
+`code-line-fragment-indices` does the same for the highlight steps of a block that carries `code-line-numbers`.
+The first value in the list belongs to the unhighlighted code, which is the state the slide opens in.
+That value is read and then ignored, because a state that needs no press cannot be given a step.
+The values after it are taken by the highlight steps in order.
 
 ````markdown
-```{.r code-line-numbers="1|2|3" code-line-fragment-indices="0,2,4,6"}
+::: {.fragment fragment-index=1}
+Set up the two panels.
+:::
+
+```{.r code-line-numbers="|2|3" code-line-fragment-indices="0,2,4"}
+par(mfrow = c(1, 2))
+plot(cars)
+plot(cars, col = "red")
 ```
 ````
 
-`code-line-fragment-indices` does the same for the highlight steps, counting the unhighlighted code as step zero.
+The slide gets three steps.
+The paragraph was given index one, the first highlight index two, and the second highlight index four, so the paragraph arrives first and the two highlights follow it.
+The deck has a slide named "Choosing when each highlight appears" that steps through it.
 
-A token that is not a number writes a console warning and leaves that slot alone, and so does a list whose length does not match the number of annotations or steps.
+## An index list turns the line matching off
 
-The [deck](preview.html) has a slide for this: the paragraphs and the annotations arrive alternately rather than in two runs.
+The two attributes are not additive.
+A block that carries `code-annotation-fragment-indices` never goes through the line matching described above, even when it also carries `code-line-numbers`.
+Its annotations become plain fragments at the indices you gave, and its highlight steps keep whatever indices they had.
+
+````markdown
+```{.r code-line-numbers="|1|2" code-annotation-fragment-indices="5,6,7"}
+library(dplyr)                          # <1>
+starwars |>                             # <2>
+  filter(species == "Droid")            # <3>
+```
+
+1. Load the package.
+2. Start from the dataset.
+3. Keep the droids.
+````
+
+The slide gets five steps, and they do not interleave.
+The three annotations arrive first, then the two highlights.
+The next section says why.
+
+## What RevealJS does with the indices
+
+The numbers you write are an order, not a position.
+RevealJS collects the fragments on a slide, sorts them, and then renumbers them from zero, so gaps close up.
+A list of `"2,4,6"` and a list of `"1,2,3"` give the same result on a slide that holds nothing else.
+
+One rule decides the rest.
+A fragment that carries an index is placed before every fragment that carries none, whatever the document order.
+
+That is what moves the highlights to the end in the section above: the annotations were given indices and the highlight steps were not.
+It also decides two cases worth knowing.
+
+- A paragraph written as `::: {.fragment}` with no `fragment-index` arrives after every annotation on a slide whose block uses `code-annotation-fragment-indices`.
+  Give the paragraph a `fragment-index` as well to place it.
+- An annotation whose slot in the list is not a number keeps no index, so it arrives after the annotations that do have one.
+  A list of `"1,x,3"` on a three-annotation block therefore steps through annotations one, three, and two, in that order.
+
+## Messages the plugin writes
+
+The plugin reports a bad attribute in the browser console and carries on.
+Nothing it reports stops a slide.
+Open the developer tools console to read them.
+
+A token that is not a whole number:
+
+````markdown
+```{.r code-annotation-fragment-indices="1,x,3"}
+```
+````
+
+```text
+[codefrag] Ignoring non-numeric code-annotation-fragment-indices token: position 2 ("x").
+```
+
+A list that is shorter or longer than the block:
+
+````markdown
+```{.r code-annotation-fragment-indices="1,2"}
+```
+````
+
+```text
+[codefrag] Code block has 3 annotations but 2 fragment indices specified.
+```
+
+`code-line-fragment-indices` on a block with no `code-line-numbers`:
+
+````markdown
+```{.r code-line-fragment-indices="0,2,4"}
+```
+````
+
+```text
+[codefrag] code-line-fragment-indices specified but no line-highlight clones found. Is code-line-numbers missing?
+```
+
+A line range wider than ten thousand lines, or one that ends before it starts:
+
+````markdown
+```{.r code-line-numbers="|1-999999999|2"}
+```
+````
+
+```text
+[codefrag] Ignoring invalid or oversized line range: "1-999999999".
+```
+
+The last message is written only where the plugin reads the ranges, which is a block that has annotations and goes through the line matching.
+A block with no annotation, and a block that carries `code-annotation-fragment-indices`, are both left alone and report nothing.
+The highlight itself still works either way, because RevealJS reads the ranges for itself.
+Where the message is written, that step pairs with no annotation, so an annotation on those lines is treated as unpaired.
+
+## Checking the configuration while you render
+
+Name the extension under `filters:` as well as under `revealjs-plugins:` and the render checks the `extensions.codefrag` block.
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+revealjs-plugins:
+  - codefrag
+filters:
+  - codefrag
+extensions:
+  codefrag:
+    enabled: "yes"
+    patch-tooltip-overflows: true
+```
+
+That block has a misspelt key and a string where a boolean belongs.
+The render prints both and finishes:
+
+```text
+(W) [codefrag] patch-tooltip-overflows: is not a recognised key and was ignored.
+(E) [codefrag] enabled: must be of type "boolean", got "string".
+```
+
+The deck is written either way.
+See the [Reference](reference.qmd#enabling-the-plugin) for why the `filters:` entry is separate.
+
+## Choosing a code-annotations mode
+
+`code-annotations` is Quarto's own option, and it decides how Quarto presents the notes.
+The plugin turns the annotations into fragments in three of the four modes, and a tooltip appears in only two of them.
+
+| Mode | What the plugin gives you |
+| --- | --- |
+| `select` | Steps through the annotations, and opens the tooltip for each. |
+| `hover` | The same, because Quarto builds a tooltip for each marker in this mode too. |
+| `below` | Steps through the annotations, and shows no tooltip, because Quarto puts the notes in a list under the block instead of building one. |
+| `false` | Nothing, because Quarto writes no markers for the plugin to find. |
+
+: What each `code-annotations` mode gives the plugin. {.striped .hover tbl-colwidths="[20,80]"}
+
+Use `select` unless you want the notes to open on hover.
 
 ## The tooltip overflow fix
 
@@ -65,17 +328,109 @@ A tooltip inside a container that clips its overflow is cut off.
 The plugin walks up from the annotation marker to the slide, and if anything on the way sets `overflow: hidden` it moves the tooltip to the slide instead.
 When nothing clips, Quarto's own placement is left alone, so a `::: {.columns}` layout keeps its natural anchor.
 
-This is on by default and there is nothing to write.
+````markdown
+::: {.columns}
+::: {.column width="50%"}
 
-## A callback
+```r
+starwars |>                             # <1>
+  head(3)                               # <2>
+```
 
-`on-annotation-shown` is a JavaScript function run after each tooltip is shown, receiving the anchor, the slide, the target cell, the target annotation, and the tippy instance.
-An exception it throws is written to the console rather than stopping the navigation.
+1. Start from the dataset.
+2. Take the first three rows.
 
-::: {.callout-important}
-`on-annotation-shown`, `enabled`, and `patch-tooltip-overflow` are read from the deck configuration, and nothing populates it for this extension.
-See the [Reference](reference.qmd#options).
 :::
+::: {.column width="50%"}
+
+A column clips nothing, so the tooltip stays where Quarto put it.
+
+:::
+:::
+````
+
+This is on by default and there is nothing to write.
+The deck has a slide named "Annotations in a column layout" that shows it.
+
+## Reacting to an annotation
+
+The plugin offers `on-annotation-shown` for this, and that option cannot be reached from a document.
+See the [Reference](reference.qmd#options) for why.
+
+Listen for the RevealJS `fragmentshown` event instead.
+The plugin gives each annotation fragment the class `code-annotation-fragment`, and the `data-target-cell` and `data-target-annotation` attributes that name the annotation.
+
+Write the listener in a file beside the deck:
+
+```html
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Reveal.on("fragmentshown", function (event) {
+      const fragment = event.fragment;
+      if (!fragment.classList.contains("code-annotation-fragment")) return;
+      console.log(
+        "annotation shown",
+        fragment.dataset.targetCell,
+        fragment.dataset.targetAnnotation
+      );
+    });
+  });
+</script>
+```
+
+Then include it:
+
+```yaml
+format:
+  revealjs:
+    code-annotations: select
+    include-after-body: _includes/annotation-hook.html
+revealjs-plugins:
+  - codefrag
+```
+
+The leading underscore on the directory keeps Quarto from treating the file as a page of its own.
+
+`fragmentshown` fires each time an annotation is revealed by a forward press.
+Going backwards fires `fragmenthidden` instead, so listen for that as well when you need both directions.
+Neither fires for an annotation that opens with the slide, because the plugin gives that annotation no fragment.
+
+## Printing
+
+`print-pdf` output is a run of pages rather than a deck you press through.
+`pdf-separate-fragments` is Quarto's option, and it decides how the pages are cut.
+It is `false` by default.
+
+Left at `false`, Quarto's own line-highlight plugin builds no highlight steps at all in a print view.
+Every annotation on a block therefore becomes a step of its own, whatever the block's `code-line-numbers` value asks for.
+The plugin then clones each annotated slide, once per annotation, so each note is open on a page of its own.
+A slide with three annotations becomes three pages, and a slide with no annotation stays one page.
+
+```yaml
+format:
+  revealjs:
+    pdf-separate-fragments: true
+```
+
+Set to `true`, the highlight steps survive and the line matching runs as it does in a live deck.
+RevealJS cuts a page per fragment step, starting with a page on which nothing is revealed, and the plugin only opens the right tooltip on each page.
+A slide with three annotations and no highlighting becomes four pages, because the opening page is one of them.
+
+The two settings therefore differ in more than the page count.
+Only `pdf-separate-fragments: true` keeps an annotation paired with a highlight, and only that setting can drop a note: an annotation shown before the first press takes no step, so it gets no page.
+
+## Options
+
+```yaml
+extensions:
+  codefrag:
+    enabled: true
+    patch-tooltip-overflow: true
+```
+
+The block is accepted by the schema check, and the plugin never sees it.
+The [Reference](reference.qmd#options) says what each option would do and why none of them arrives.
+Everything else on this page works as written.
 
 ## Source
 
