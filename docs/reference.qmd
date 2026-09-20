@@ -51,6 +51,7 @@ Quarto copies a metadata key into that configuration only when the plugin entry 
 The `codefrag` entry has no `config:` block, so nothing written under `extensions.codefrag` reaches the plugin and all three keep their defaults.
 The schema check still reads the block and still reports a key or a value it does not accept.
 The per-block attributes below are unaffected and work as documented.
+
 :::
 
 ## Per-block fragment indices
