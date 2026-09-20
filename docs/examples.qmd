@@ -283,7 +283,12 @@ A line range wider than ten thousand lines, or one that ends before it starts:
 
 ````markdown
 ```{.r code-line-numbers="|1-999999999|2"}
+library(ggplot2) # <1>
+data <- mtcars   # <2>
 ```
+
+1. Load the package.
+2. Take the data.
 ````
 
 ```text

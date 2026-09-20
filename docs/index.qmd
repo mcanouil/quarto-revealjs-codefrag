@@ -59,7 +59,7 @@ See the [Reference](reference.qmd) for every option, and the [Examples](examples
 
 RevealJS.
 
-A `print-pdf` export keeps the stepping as pages: each annotated slide is cloned once per annotation, with that note open.
+A `print-pdf` export keeps the stepping as pages: each annotated slide becomes one page per annotation, with that note open.
 See the [Examples](examples.qmd#printing) for what `pdf-separate-fragments` changes.
 
 ## Links
