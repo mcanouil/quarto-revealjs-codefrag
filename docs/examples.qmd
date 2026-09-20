@@ -232,23 +232,41 @@ A token that is not a whole number:
 
 ````markdown
 ```{.r code-annotation-fragment-indices="1,x,3"}
+library(ggplot2)     # <1>
+data <- mtcars       # <2>
+plot <- ggplot(data) # <3>
 ```
+
+1. Load the package.
+2. Take the data.
+3. Start the plot.
 ````
 
 ```text
 [codefrag] Ignoring non-numeric code-annotation-fragment-indices token: position 2 ("x").
 ```
 
+The plugin reads `code-annotation-fragment-indices` only on a block that has annotations, so a block without them reports nothing.
+
 A list that is shorter or longer than the block:
 
 ````markdown
 ```{.r code-annotation-fragment-indices="1,2"}
+library(ggplot2)     # <1>
+data <- mtcars       # <2>
+plot <- ggplot(data) # <3>
 ```
+
+1. Load the package.
+2. Take the data.
+3. Start the plot.
 ````
 
 ```text
 [codefrag] Code block has 3 annotations but 2 fragment indices specified.
 ```
+
+The plugin counts the annotation anchors in the block, so the number it reports is the number of anchors it found.
 
 `code-line-fragment-indices` on a block with no `code-line-numbers`:
 
