@@ -1,22 +1,23 @@
 /**
  * Smoke test for the parseFragmentIndices validation warnings.
  *
- * Loads ../failing-bugs.html in a headless browser, captures console
+ * Loads failing-bugs.html in a headless browser, captures console
  * messages, and asserts the expected `[codefrag] Ignoring non-numeric`
  * warnings are emitted for both `code-annotation-fragment-indices` and
  * `code-line-fragment-indices`.
  *
  * Run: `node tests/check-warnings.mjs` from the project root.
- * Requires ../failing-bugs.html (produced by `quarto render failing-bugs.qmd`)
- * and puppeteer available via the same resolution rules as fragment-map.mjs.
+ * Requires failing-bugs.html, beside this file, produced by
+ * `quarto render tests/failing-bugs.qmd`, and puppeteer available via the
+ * same resolution rules as fragment-map.mjs.
  */
 
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const TARGET_HTML = resolve(PROJECT_ROOT, "failing-bugs.html");
+const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
+const TARGET_HTML = resolve(TESTS_DIR, "failing-bugs.html");
 
 async function loadPuppeteer() {
   const tryPaths = [
@@ -41,7 +42,7 @@ async function loadPuppeteer() {
 
 if (!existsSync(TARGET_HTML)) {
   process.stderr.write(
-    `failing-bugs.html not found at ${TARGET_HTML}. Run \`quarto render failing-bugs.qmd\` first.\n`
+    `failing-bugs.html not found at ${TARGET_HTML}. Run \`quarto render tests/failing-bugs.qmd\` first.\n`
   );
   process.exit(1);
 }

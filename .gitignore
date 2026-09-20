@@ -2,8 +2,8 @@
 example_files/
 example.html
 example.pdf
-failing-bugs.html
-failing-bugs_files/
+tests/failing-bugs.html
+tests/failing-bugs_files/
 index.html
 screenshots/
 /.quarto/
