@@ -297,7 +297,7 @@ data <- mtcars   # <2>
 
 The last message is written only where the plugin reads the ranges, which is a block that has annotations and goes through the line matching.
 A block with no annotation, and a block that carries `code-annotation-fragment-indices`, are both left alone and report nothing.
-The highlight itself still works either way, because RevealJS reads the ranges for itself.
+The highlight itself still works either way, because Quarto's line-highlight plugin reads the ranges for itself.
 Where the message is written, that step pairs with no annotation, so an annotation on those lines is treated as unpaired.
 
 ## Checking the configuration while you render
@@ -389,13 +389,15 @@ Write the listener in a file beside the deck:
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     Reveal.on("fragmentshown", function (event) {
-      const fragment = event.fragment;
-      if (!fragment.classList.contains("code-annotation-fragment")) return;
-      console.log(
-        "annotation shown",
-        fragment.dataset.targetCell,
-        fragment.dataset.targetAnnotation
-      );
+      const shown = event.fragments ?? [event.fragment];
+      for (const fragment of shown) {
+        if (!fragment.classList.contains("code-annotation-fragment")) continue;
+        console.log(
+          "annotation shown",
+          fragment.dataset.targetCell,
+          fragment.dataset.targetAnnotation
+        );
+      }
     });
   });
 </script>
@@ -413,6 +415,9 @@ revealjs-plugins:
 ```
 
 The leading underscore on the directory keeps Quarto from treating the file as a page of its own.
+
+One press fires one event, which carries every fragment it revealed in `event.fragments`.
+An annotation that shares its index with a highlight clone or with a wrapping `.fragment` div is not the first of them, so read the list rather than `event.fragment` alone.
 
 `fragmentshown` fires each time an annotation is revealed by a forward press.
 Going backwards fires `fragmenthidden` instead, so listen for that as well when you need both directions.
