@@ -1,0 +1,9 @@
+project:
+  type: default
+  pre-render:
+    - rm -rf _extensions
+    - cp -R ../_extensions _extensions
+  post-render:
+    - rm -rf _extensions
+  render:
+    - failing-bugs.qmd

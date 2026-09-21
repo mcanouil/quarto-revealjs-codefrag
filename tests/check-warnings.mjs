@@ -8,8 +8,8 @@
  *
  * Run: `node tests/check-warnings.mjs` from the project root.
  * Requires failing-bugs.html, beside this file, produced by
- * `quarto render tests/failing-bugs.qmd`, and puppeteer available via the
- * same resolution rules as fragment-map.mjs.
+ * `quarto render tests`, and puppeteer available via the same resolution
+ * rules as fragment-map.mjs.
  */
 
 import { existsSync } from "node:fs";
@@ -42,7 +42,7 @@ async function loadPuppeteer() {
 
 if (!existsSync(TARGET_HTML)) {
   process.stderr.write(
-    `failing-bugs.html not found at ${TARGET_HTML}. Run \`quarto render tests/failing-bugs.qmd\` first.\n`
+    `failing-bugs.html not found at ${TARGET_HTML}. Run \`quarto render tests\` first.\n`
   );
   process.exit(1);
 }

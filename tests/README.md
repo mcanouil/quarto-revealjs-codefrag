@@ -23,12 +23,13 @@ node tests/fragment-map.mjs --no-render
 Loads `failing-bugs.html` and asserts the validation warnings emitted by `parseFragmentIndices` for non-numeric `code-annotation-fragment-indices` and `code-line-fragment-indices` tokens are visible in the browser console.
 
 The fixture is `failing-bugs.qmd`, in this directory.
-The `_extensions` symlink beside it points at the extension at the project root, so Quarto finds the `codefrag` plugin when it renders the fixture.
+It renders through the `_quarto.yml` project beside it, which copies the extension in before the render and removes the copy afterwards.
+Quarto looks for `_extensions` in the directory of the file it renders, and that copy is how it finds the `codefrag` plugin.
 
 Render the fixture first, then run the check from the project root:
 
 ```bash
-quarto render tests/failing-bugs.qmd
+quarto render tests
 node tests/check-warnings.mjs
 ```
 

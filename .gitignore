@@ -2,6 +2,7 @@
 example_files/
 example.html
 example.pdf
+/tests/_extensions/
 tests/failing-bugs.html
 tests/failing-bugs_files/
 index.html
