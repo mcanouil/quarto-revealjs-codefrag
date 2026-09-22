@@ -65,7 +65,7 @@ A code block can say when each annotation appears, rather than taking them in or
 
 : Attributes accepted on a code block. {.striped .hover tbl-colwidths="[40,60]"}
 
-The first value of `code-line-fragment-indices` belongs to the unhighlighted code, which is the state the slide opens in.
+The first value of `code-line-fragment-indices` belongs to the original code block, which is the state the slide opens in, highlighted or not.
 That state needs no press, so the value is read and then ignored, and the values after it are taken by the highlight steps in order.
 
 A token that is not a number writes a console warning and leaves that slot without an index, rather than failing the slide.
@@ -89,7 +89,7 @@ An annotation that pairs with nothing is given a step after the highest step on 
 It also decides whether line highlighting reaches the export, because Quarto's own line-highlight plugin builds no highlight steps in a print view unless the option is `true`.
 
 Left at its default of `false`, a block keeps no highlight steps, so the matching above cannot run and every annotation becomes a step of its own.
-The plugin then clones each annotated slide once per annotation, and each page carries one open note.
+The plugin then keeps the page for the first annotation and clones it for each of the rest, so every page carries one open note.
 A slide with three annotations becomes three pages, whatever its `code-line-numbers` value asks for.
 
 Set to `true`, the highlight steps survive and the matching runs as it does in a live deck.

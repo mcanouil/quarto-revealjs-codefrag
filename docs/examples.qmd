@@ -14,6 +14,7 @@ The [preview deck](preview.html) is where you step through the result.
 
 A slide is described by its steps, counting from the first arrow press.
 Each order was read out of the rendered deck in a browser, from the `data-fragment-index` attribute that RevealJS leaves on each fragment once the plugin has run, and not worked out from the source alone.
+
 :::
 
 The [Reference](reference.qmd) holds the options, the attributes, and the rules.
@@ -163,7 +164,7 @@ The deck has a slide named "Choosing when each annotation appears" that steps th
 ## Choosing when each highlight step appears
 
 `code-line-fragment-indices` does the same for the highlight steps of a block that carries `code-line-numbers`.
-The first value in the list belongs to the unhighlighted code, which is the state the slide opens in.
+The first value in the list belongs to the original code block, which is the state the slide opens in, highlighted or not.
 That value is read and then ignored, because a state that needs no press cannot be given a step.
 The values after it are taken by the highlight steps in order.
 
@@ -353,6 +354,7 @@ When nothing clips, Quarto's own placement is left alone, so a `::: {.columns}` 
 
 ````markdown
 ::: {.columns}
+
 ::: {.column width="50%"}
 
 ```r
@@ -364,11 +366,13 @@ starwars |>                             # <1>
 2. Take the first three rows.
 
 :::
+
 ::: {.column width="50%"}
 
 A column clips nothing, so the tooltip stays where Quarto put it.
 
 :::
+
 :::
 ````
 
@@ -431,7 +435,7 @@ It is `false` by default.
 
 Left at `false`, Quarto's own line-highlight plugin builds no highlight steps at all in a print view.
 Every annotation on a block therefore becomes a step of its own, whatever the block's `code-line-numbers` value asks for.
-The plugin then clones each annotated slide, once per annotation, so each note is open on a page of its own.
+The plugin then keeps the page for the first annotation and clones it for each of the rest, so each note is open on a page of its own.
 A slide with three annotations becomes three pages, and a slide with no annotation stays one page.
 
 ```yaml

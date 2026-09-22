@@ -138,6 +138,7 @@ plot(cars, col = "red")
 A column clips nothing, so each tooltip stays where Quarto put it.
 
 ::: {.columns}
+
 ::: {.column width="50%"}
 
 ```r
@@ -149,11 +150,13 @@ starwars |>                             # <1>
 2. Take the first three rows.
 
 :::
+
 ::: {.column width="50%"}
 
 The plugin moves a tooltip up to the slide only when something between the marker and the slide clips its overflow.
 
 :::
+
 :::
 
 ## Why it helps
