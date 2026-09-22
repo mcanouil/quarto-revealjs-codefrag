@@ -341,6 +341,7 @@ Third point appears.
 Annotations placed inside a column layout are picked up like any other annotation, and the tooltip position respects the wrapping container.
 
 ::: {.columns}
+
 ::: {.column width="50%"}
 
 ```{.r}
@@ -352,9 +353,13 @@ mtcars |>            # <1>
 2. Take the first three rows.
 
 :::
+
 ::: {.column width="50%"}
+
 Left column is a regular code block; tooltips render in this slide without leaving the column boundaries unless an ancestor explicitly clips overflow.
+
 :::
+
 :::
 
 # Configuration
