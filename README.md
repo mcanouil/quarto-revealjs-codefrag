@@ -7,7 +7,7 @@ Annotations synchronise with line highlighting where both are used, and the tool
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-revealjs-codefrag@1.2.0
+quarto add mcanouil/quarto-revealjs-codefrag@1.2.1
 ```
 
 This will install the extension under the `_extensions` subdirectory.
